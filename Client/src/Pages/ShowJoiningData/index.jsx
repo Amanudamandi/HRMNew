@@ -1,0 +1,193 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+function Index() {
+    const navigate = useNavigate();
+
+    const [status, setStatus] = useState('Approved'); // Default status
+    const [data, setData] = useState([]); // Holds fetched data
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    // Function to fetch data based on status
+    const fetchData = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_SERVER_ADDRESS}/auth/show-joiningForm?status=${status}`, {
+                withCredentials: true
+            });
+
+            console.log("my reponse joining data", response?.data);
+            console.log("my reponse joining data 224", response?.data?.data)
+            setData(response?.data?.data); // Set data from API response
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError('Failed to fetch data. Please try again.');
+        }
+        setLoading(false);
+    };
+
+    console.log("mt joining data is ", data);
+
+    // Fetch data when status changes
+    useEffect(() => {
+        fetchData();
+    }, [status])
+
+    // Function to format date
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'; // Handle empty dates
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB'); // Formats as DD/MM/YYYY
+    };
+
+    const handleRowClick = (emp) => {
+        navigate('/layout/showsinglejoiningData', { state: { employee: emp } });
+    };
+
+  return (
+    <>
+       <div>
+           <div className='py-2 bgMainColor mt-4 shadow-xl flex justify-between'>
+                <div>
+                    <h1 className=' text-white font-bold text-xl ml-2'>Joining Form data</h1>
+                </div>
+                <div className='flex gap-2 mr-2'>
+                        {['Approved', 'Pending']?.map((item) => (
+                            <button
+                                key={item}
+                                onClick={() => setStatus(item)}
+                                className={`px-4 py-2 rounded-md text-white ${status === item ? 'bg-green-500' : 'bg-red-500'}`}
+                            >
+                                {item}
+                            </button>
+                        ))}
+                </div>
+           </div>
+
+           <div className='overflow-auto h-[calc(100vh-14rem)]'>
+            <div className="relative">
+                <table className=" " style={{ position: 'relative'}}>
+                    <thead className="text-xs border border-gray-150 bg-gray-800 text-gray-100 uppercase dark:bg-gray-800 dark:text-gray-400 ">
+                    <tr>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">Select</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">Company Name</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">Employee Name</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">father_husbandName</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">dateOfBirth</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">gender</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">maritalStatus</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bloodGroup</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">personalPhoneNum</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">personalEmail</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">currentAddress</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">currentState</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">currentCity</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">currentPinCode</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">permanentAddress</th>
+
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">permanentState</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">permanentCity</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">permanentPinCode</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bankName</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">branchName</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bankAccount</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bankIFSC</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bankAccountHolderName</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">bankAddress</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">panCard</th>
+                        <th className="px-6 py-3 text-center font-semibold text-nowrap">aadharCard</th>
+                    {status !== 'Pending' && (
+                                <>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Department</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Designation</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Employee Type</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Interview Date</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Joining Date</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Mode of Recruitment</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Reference</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">CTC</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Inhand</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Employee ESI</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Employee PF</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Employer ESI</th>
+                                    <th className="px-6 py-3 text-center font-semibold text-nowrap">Employer PF</th>
+                                </>
+                    )}
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                       {data.length > 0 ? (
+                            data.map((emp, index) => (
+                                <tr key={index} 
+                                    className="border-b cursor-pointer hover:bg-gray-200"
+                                    onClick={() => handleRowClick(emp)}
+                                   >
+                                    <td className="px-4 py-3 text-center"><input type="checkbox" /></td>
+                                    <td className="px-4 py-2 text-center">{emp?.companyId?.name || 'N/A'}  </td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.name}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.father_husbandName}</td>
+                                    <td className="px-4 py-2 text-center">{formatDate(emp?.candidatePersonalDetail?.dateOfBirth)}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.gender}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.maritalStatus}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.bloodGroup}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.personalPhoneNum}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.personalEmail}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.currentAddress?.address}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.currentAddress?.state}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.currentAddress?. city}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.currentAddress?. pincode}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.permanentAddress?.address}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.permanentAddress?.state}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.permanentAddress?.city}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.permanentAddress?.pincode}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.bankName}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.branchName}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.bankAccount}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.bankIFSC}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.bankAccountHolderName}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidateBankDetail?.bankAddress}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.panCard}</td>
+                                    <td className="px-4 py-2 text-center">{emp?.candidatePersonalDetail?.aadharCard}</td>
+                                {status !== 'Pending' && (
+                                    <>
+                                        <td className="px-4 py-2 text-center">{emp?.department?.department}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.designation?.designation}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.employeeType}</td>
+                                        <td className="px-4 py-2 text-center">{formatDate(emp?.interviewDate)}</td>
+                                        <td className="px-4 py-2 text-center">{formatDate(emp?.joiningDate)}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.modeOfRecruitment}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.reference}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.ctc}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.inHand}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.employeeESI}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.employeePF}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.employerESI}</td>
+                                        <td className="px-4 py-2 text-center">{emp?.salary?.employerPF}</td>
+                                    </>
+                                )}
+                                </tr>
+                            ))
+                            ) : (
+                            <tr>
+                                <td colSpan="15" className="text-center py-4">
+                                    No data found.
+                                </td>
+                            </tr>
+                        )}
+                    
+                    </tbody>
+                    
+                </table>
+            </div>
+           </div>
+           
+       </div>
+    </>
+  )
+}
+
+export default Index

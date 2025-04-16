@@ -1,0 +1,542 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model employee {
+  id               String   @id @default(uuid())
+  name             String
+  employeeCode     String   @unique
+  password         String
+  isActive         Boolean  @default(true)
+  isAdmin          Boolean  @default(false)
+  biometricPunchId String?  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+  refreshToken     String?
+
+  updatedById      String? 
+  updatedBy        employee? @relation("EmployeeUpdatedByAdmin", fields: [updatedById],references: [id])
+  updatedEmployeesByAdmin employee[] @relation("EmployeeUpdatedByAdmin") // Back-reference for admin
+
+  joiningFormId              String? @unique
+  employeePersonalDetailId   String? @unique
+  employeeBankDetailId       String? @unique
+  employeeAttachmentDetailId String? @unique
+  employeeWorkDetailId       String? @unique
+  employeeSalaryDetailId     String? @unique
+
+
+  //employee-data model relations 
+  employeePersonalDetail   emp_personal_detail? @relation("employeePersonalDetails")
+  employeeBankDetail       emp_bank_detail?     @relation("employeeBankDetails")
+  employeeAttachmentDetail emp_attachment?     @relation("employeeAttachmentDetails")
+  employeeWorkDetail       emp_work_detail?     @relation("employeeWorkDetail")
+  employeeSalaryDetail     emp_salary_detail?   @relation("employeeSalaryDetail")
+  employeeJoiningFormDetail joining_form?      @relation("candidateEmployeeDetail",fields: [joiningFormId],references: [id])
+
+  //employee attendance-data model relation
+  employeeAttendance attendance[] @relation("employeeDailyAttendance")
+
+  //common model relations
+  createdWorkTypes work_type[] @relation("worktypeCreatedBy")
+  updatedWorkTypes work_type[] @relation("worktypeUpdatedBy")
+
+  createdQualifications qualification[] @relation("qualificationCreatedBy")
+  updatedQualifications qualification[] @relation("qualificationUpdatedBy")
+
+  createdDegrees degree[] @relation("degreeCreatedBy")
+  updatedDegrees degree[] @relation("degreeUpdatedBy")
+
+  createdDepartments department[] @relation("departmentCreatedBy")
+  updatedDepartments department[] @relation("departmentUpdatedBy")
+
+  createdDesignations designation[] @relation("designationCreatedBy")
+  updatedDesignations designation[] @relation("designationUpdatedBy")
+
+  createdCompanies company[] @relation("companyCreatedBy")
+  updatedCompanies company[] @relation("companyUpdatedBy")
+
+  createdBranches branch[] @relation("branchCreatedBy")
+  updatedBranches branch[] @relation("branchUpdatedBy")
+
+  createdShift shift[] @relation("shiftCreatedBy")
+  updatedShift shift[] @relation("shiftUpdatedBy")
+
+  createdOfficeTimePolicy office_time_policy[] @relation("officeTimePolicyCreatedBy")
+  updatedOfficeTimePolicy office_time_policy[] @relation("officeTimePolicyUpdatedBy")
+
+  createdReportingManager reporting_manager[] @relation("reportingManagerCreatedBy")
+  updatedReportingManager reporting_manager[] @relation("reportingManagerUpdatedBy")
+
+  updatedEmpAttachment     emp_attachment[]     @relation("empAttachmentUpdatedBy")
+  updatedEmpBankDetail     emp_bank_detail[]     @relation("empBankDetailUpdatedBy")
+  updatedEmpPersonalDetail emp_personal_detail[] @relation("empPersonalDetailUpdatedBy")
+  updatedEmpWorkDetail     emp_work_detail[]     @relation("empWorkDetailUpdatedBy")
+  updatedJoiningForm       joining_form[]       @relation("joiningFormUpdatedBy")
+  updatedEmpSalaryDetail   emp_salary_detail[]   @relation("salaryDetailUpdatedBy")
+
+  //attendance model relation
+  updatedEmpAttendance attendance[] @relation("attendanceUpdatedBy")
+
+  //employee-work-detail relations
+  employeeJoiningHr emp_work_detail[] @relation("employeeJoiningHr")
+}
+
+enum joining_form_status {
+  Pending
+  Approved
+  Rejected
+}
+
+model joining_form {
+  id       String            @id @default(uuid())
+  status   joining_form_status @default(Pending)
+  formData Json
+
+  interviewDate   DateTime?
+  joiningDate     DateTime?
+  modeOfRecruitment String?
+  reference         String?
+  uanNumber         String?
+
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @default(now()) @updatedAt
+  updatedById               String?        
+  updatedBy                 employee?           @relation("joiningFormUpdatedBy", fields: [updatedById], references: [id])
+  //relations
+  candidatePersonalDetail   emp_personal_detail? @relation("candidatePersonalDetails")
+  candidateBankDetail       emp_bank_detail?     @relation("candidateBankDetails")
+  candidateAttachmentDetail emp_attachment?     @relation("candidateAttachmentDetails")
+  candidateSalaryDetail     emp_salary_detail?   @relation("candidateSalaryDetail")
+  candidateWorkDetail       emp_work_detail?     @relation("candidateWorkDetail")
+  candidateEmployeeDetail   employee?          @relation("candidateEmployeeDetail")
+}
+
+//common Models
+
+model work_type {
+  id       String @id @default(uuid())
+  workType String @unique
+
+  createdById String
+  createdBy   employee @relation("worktypeCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("worktypeUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeWorkType emp_work_detail[] @relation("employeeWorkType")
+}
+
+model qualification {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdById String
+  createdBy   employee @relation("qualificationCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("qualificationUpdatedBy", fields: [updatedById], references: [id])
+
+  degrees           degree[]            @relation("QualificationHasDegrees")
+  employeeQualification emp_work_detail[] @relation("employeeQualification")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model degree {
+  id              String        @id @default(uuid())
+  name            String
+  qualificationId String
+  qualification   qualification @relation("QualificationHasDegrees", fields: [qualificationId], references: [id])
+
+  createdById String
+  createdBy   employee @relation("degreeCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("degreeUpdatedBy", fields: [updatedById], references: [id])
+
+  employeeDegree emp_work_detail[] @relation("employeeDegree")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model department {
+  id         String @id @default(uuid())
+  department String @unique
+
+  createdById String
+  createdBy   employee @relation("departmentCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("departmentUpdatedBy", fields: [updatedById], references: [id])
+
+  designation designation[] @relation("DepartmentHasDesignations")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeDepartment emp_work_detail[] @relation("employeeDepartment")
+}
+
+model designation {
+  id           String     @id @default(uuid())
+  name         String
+  departmentId String
+  department   department @relation("DepartmentHasDesignations", fields: [departmentId], references: [id])
+
+  createdById String
+  createdBy   employee @relation("designationCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("designationUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeDesignation emp_work_detail[] @relation("employeeDesignation")
+}
+
+model company {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdById String
+  createdBy   employee @relation("companyCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("companyUpdatedBy", fields: [updatedById], references: [id])
+
+  branch branch[] @relation("CompanyHasBranches")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeCompany emp_work_detail[] @relation("employeeCompany")
+}
+
+model branch {
+  id        String  @id @default(uuid())
+  name      String
+  address   String
+  pin       Int
+  companyId String
+  company   company @relation("CompanyHasBranches", fields: [companyId], references: [id])
+
+  createdById String
+  createdBy   employee @relation("branchCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("branchUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeBranch emp_work_detail[] @relation("employeeBranch")
+}
+
+//enums for shift
+enum mark_as_absent_status {
+  AAA
+  L_WO_L
+}
+
+enum week_off_day {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
+model shift {
+  id              String             @id @default(uuid())
+  name            String             @unique
+  startTime       String
+  endTime         String
+  duration        String
+  markAsAbsent    mark_as_absent_status @default(L_WO_L)
+  isNightShift    Boolean            @default(false)
+  weekOff         week_off_day         @default(Sunday)
+  maxEarlyAllowed String
+  maxLateAllowed  String
+
+  createdById String
+  createdBy   employee @relation("shiftCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("shiftUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeShift emp_work_detail[] @relation("employeeShift")
+}
+
+model office_time_policy {
+  id                   String  @id @default(uuid())
+  policyName           String  @unique
+  permittedLateArrival String
+  absent               String
+  pByTwo               String
+  multiPunch           Boolean @default(true)
+  lateArrival1         String?
+  lateArrival2         String?
+  lateArrival3         String?
+  lateArrival4         String?
+  dayDeduct1           Int?
+  dayDeduct2           Int?
+  dayDeduct3           Int?
+  dayDeduct4           Int?
+
+  lateComingRule         Boolean  @default(true)
+  deductFromAttendance   Boolean?
+  deductFromLeave        Boolean?
+  allowedLateDaysInMonth Int?
+  salaryCutPercentage    Int?
+  continuous             Boolean?
+
+  createdById String
+  createdBy   employee @relation("officeTimePolicyCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("officeTimePolicyUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee-work-detail relation
+  employeeOfficeTimePolicy emp_work_detail[] @relation("employeeOfficeTimePolicy")
+}
+
+//employee details
+
+model emp_personal_detail {
+  id String @id @default(uuid())
+  name               String
+  father_husbandName String
+  dateOfBirth        DateTime
+  personalPhoneNum   String   @db.VarChar(10)  //unique-via controller
+  personalEmail      String
+  panCard            String   @db.VarChar(10)  //unique-via controller
+  aadharCard         String   @db.VarChar(12)  //unique-via controller
+  permanentAddress   Json?
+  currentAddress     Json?
+  /**
+   * json schema for the permanent address and current address
+   * {
+   * address:"",
+   * city:"",
+   * state:"",
+   * pincode:""
+   * }
+   */
+
+  gender           String
+  maritalStatus    String
+  bloodGroup       String
+  emergencyContact Json
+  /**
+   * [ {
+   * contactName:String,
+   * relation:String,
+   * address:String,
+   * phoneNumber:Number
+   * } ]
+   */
+  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //employee and joining-form ref
+  employeeId String?   @unique
+  // employee   Employee @relation("employeePersonalDetails")
+  employee   employee? @relation("employeePersonalDetails", fields: [employeeId], references: [id])
+
+  joiningFormId String      @unique
+  joiningForm   joining_form @relation("candidatePersonalDetails", fields: [joiningFormId], references: [id])
+
+  updatedById String?
+  updatedBy   employee? @relation("empPersonalDetailUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model emp_bank_detail {
+  id                    String @id @default(uuid())
+  bankName              String
+  branchName            String
+  bankAccount           String
+  bankIFSC              String
+  bankAccountHolderName String
+  bankAddress           String
+
+  employeeId String?   @unique
+  employee   employee? @relation("employeeBankDetails", fields: [employeeId], references: [id])
+
+  joiningFormId String      @unique
+  joiningForm   joining_form @relation("candidateBankDetails", fields: [joiningFormId], references: [id])
+
+  updatedById String?
+  updatedBy   employee? @relation("empBankDetailUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model emp_attachment {
+  id                       String @id @default(uuid())
+  aadharCardAttachment     String?
+  panCardAttachment        String?
+  bankAttachment           String?
+  class10Attachment        String?
+  class12Attachment        String?
+  graduationAttachment     String?
+  postGraduationAttachment String?
+  photoAttachment          String
+  signatureAttachment      String
+
+  employeeId String?   @unique
+  employee   employee? @relation("employeeAttachmentDetails", fields: [employeeId], references: [id])
+
+  joiningFormId String      @unique
+  joiningForm   joining_form @relation("candidateAttachmentDetails", fields: [joiningFormId], references: [id])
+
+  updatedById String?
+  updatedBy   employee? @relation("empAttachmentUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model reporting_manager {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdById String
+  createdBy   employee @relation("reportingManagerCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   employee @relation("reportingManagerUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  //relation with employee
+  employeeWorkDetail emp_work_detail[] @relation("EmployeeReportingManager")
+}
+
+model emp_work_detail {
+  id                String    @id @default(uuid())
+  companyPhoneNum   String?   @db.VarChar(10)
+  companyEmail      String?
+  joiningDate       DateTime?
+  lastAppraisalDate DateTime?
+  regisnationDate   DateTime?
+
+  reportingManagerId String?
+  reportingManager   reporting_manager? @relation("EmployeeReportingManager", fields: [reportingManagerId], references: [id])
+  joiningHrId        String?
+  joiningHr          employee?         @relation("employeeJoiningHr", fields: [joiningHrId], references: [id])
+  officeTimePolicyId String?
+  officeTimePolicy   office_time_policy? @relation("employeeOfficeTimePolicy", fields: [officeTimePolicyId], references: [id])
+  shiftId            String?
+  shift              shift?            @relation("employeeShift", fields: [shiftId], references: [id])
+  companyId          String?
+  company            company?          @relation("employeeCompany", fields: [companyId], references: [id])
+  branchId           String?
+  branch             branch?           @relation("employeeBranch", fields: [branchId], references: [id])
+  departmentId       String?
+  department         department?       @relation("employeeDepartment", fields: [departmentId], references: [id])
+  designationId      String?
+  designation        designation?      @relation("employeeDesignation", fields: [designationId], references: [id])
+  qualificationId String?
+  qualification   qualification? @relation("employeeQualification", fields: [qualificationId], references: [id])
+  degreeId        String?
+  degree          degree?        @relation("employeeDegree", fields: [degreeId], references: [id])
+  workTypeId         String?
+  workType           work_type?         @relation("employeeWorkType", fields: [workTypeId], references: [id])
+
+  updatedById String
+  updatedBy   employee @relation("empWorkDetailUpdatedBy", fields: [updatedById], references: [id])
+
+  employeeId String?   @unique
+  employee   employee? @relation("employeeWorkDetail", fields: [employeeId], references: [id])
+
+  joiningId String @unique
+  joiningForm joining_form @relation("candidateWorkDetail",fields: [joiningId],references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model emp_salary_detail {
+  id          String   @id @default(uuid())
+  ctc         Decimal  @default(0)
+  inHand      Decimal  @default(0)
+  employeeESI Decimal? @default(0)
+  employeePF  Decimal? @default(0)
+  employerESI Decimal? @default(0)
+  employerPF  Decimal? @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  updatedById String
+  updatedBy employee @relation("salaryDetailUpdatedBy", fields: [updatedById],references: [id])
+
+  employeeId String?   @unique
+  employee   employee? @relation("employeeSalaryDetail", fields: [employeeId], references: [id])
+
+  joiningFormId String      @unique
+  joiningForm   joining_form @relation("candidateSalaryDetail", fields: [joiningFormId], references: [id])
+}
+
+
+// attendance table schemas
+model attendance_status {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  isDefault Boolean @default(false)
+  attendances attendance[] @relation("attendanceStatus")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model attendance{
+  id String @id @default(uuid())
+  employeeId String
+  employee employee @relation("employeeDailyAttendance",fields: [employeeId],references: [id])
+
+  date DateTime
+  punchInTime DateTime
+  punchOutTime DateTime?
+  totalMinutes Int?
+
+  penaltyIsPenalized Boolean @default(false)
+  penaltyReason String @default("")
+  penaltyDeduction   Decimal @default(0.0)
+
+  statusId String
+  status attendance_status @relation("attendanceStatus",fields: [statusId],references: [id])
+
+  updatedById String?
+  updatedBy employee? @relation("attendanceUpdatedBy",fields: [updatedById],references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
