@@ -4,7 +4,7 @@ import { IoPlaySkipForward } from "react-icons/io5";
 
 function Card({ iconName, cardHeading, count }) {
 
-  return (
+  return (  
     <div className=" md:w-56 md:p-4">
       <fieldset className="border-2 border-gray-400">
         <legend>

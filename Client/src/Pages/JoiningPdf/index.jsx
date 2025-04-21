@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Heading from '../../Component/Common/header/heading';
 
 function Index() {
+
+    const headingList=['Company Name',	'Employee Name','father_husbandName','dateOfBirth','gender','maritalStatus','bloodGroup','personalPhoneNum','joiningDate']
     
     const [status, setStatus] = useState('Approved');
     const [data, setData] = useState([]);
@@ -185,8 +188,8 @@ function Index() {
 
             <div className='overflow-auto h-[calc(100vh-16rem)]'>
             <div className="relative">
-                <table className=" " style={{ position: 'relative'}}>
-                    <thead className="text-xs border border-gray-150 bg-gray-800 text-gray-100 uppercase dark:bg-gray-800 dark:text-gray-400 ">
+                <table className="w-full border-collapse border border-gray-200 " style={{ position: 'relative'}}>
+                    {/* <thead className="text-xs border border-gray-150 bg-gray-800 text-gray-100 uppercase dark:bg-gray-800 dark:text-gray-400 ">
                     <tr>
                         <th className="px-6 py-3 text-center font-semibold text-nowrap">Select</th>
                         <th className="px-6 py-3 text-center font-semibold text-nowrap">Company Name</th>
@@ -200,7 +203,9 @@ function Index() {
                         <th className="px-6 py-3 text-center font-semibold text-nowrap">joiningDate</th>
                     </tr>
                     
-                    </thead>
+                    </thead> */}
+                    <Heading
+                    headingList={headingList}/>
                     <tbody>
              
              
@@ -237,13 +242,6 @@ function Index() {
                             filteredData.map((emp, index) => (
                                 <tr key={index} 
                                     className="border-b cursor-pointer hover:bg-gray-200">
-                                    <td className="px-4 py-3 text-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.includes(emp._id)}
-                                            onChange={() => handleCheckboxChange(emp._id)}
-                                        />
-                                    </td>
                                     <td className="px-4 py-2 text-center">{emp?.companyId?.name || 'N/A'}  </td>
                                     <td className="px-4 py-2 text-center">{emp?.name}</td>
                                     <td className="px-4 py-2 text-center">{emp?.father_husbandName}</td>

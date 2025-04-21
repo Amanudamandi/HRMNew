@@ -20,7 +20,7 @@ function DailyReport() {
 
   const fetchAllEmployeeNameWithId = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_SERVER_ADDRESS}/auth/showAllEmployee`);
+      const response = await axios.get(`${process.env.REACT_APP_SERVER_ADDRESS}/auth/show-employee`);
       setShowAllEmployee(response?.data?.data);
       setFilteredEmployees(response?.data?.data);
     } catch (error) {
@@ -37,9 +37,13 @@ function DailyReport() {
     setFilteredEmployees(filtered);
   };
 
+
+  console.log("filterdata: ",filteredEmployees);
+
   const handleSelectAll = () => {
+    
     if (!selectAll) {
-      setSelectedEmployees(filteredEmployees.map((emp) => emp._id));
+      setSelectedEmployees(filteredEmployees.map((emp) => emp.id));
     } else {
       setSelectedEmployees([]);
     }
@@ -47,12 +51,16 @@ function DailyReport() {
     setFewSelect(false);
   };
 
+  console.log("selectedEmployees: ",selectedEmployees)
+
   const handleFewSelect = () => {
     setSelectAll(false);
     setFewSelect(!fewSelect);
+    // setFewSelect((prev)=>!pre);
     if (!fewSelect) {
       setSelectedEmployees([]);
     }
+    // setSelectAll(false);
   };
 
   const toggleEmployeeSelection = (id) => {
@@ -62,6 +70,15 @@ function DailyReport() {
       setSelectedEmployees([...selectedEmployees, id]);
     }
   };
+
+  // const toggleEmployeeSelection = (id) => {
+  //   setSelectedEmployees((prev) =>
+  //     prev.includes(id)
+  //       ? prev.filter((empId) => empId !== id)
+  //       : [...prev, id]
+  //   );
+  // };
+  
 
  
   
@@ -81,7 +98,7 @@ function DailyReport() {
   
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_ADDRESS}/attendance/daily-report-download`, data, {
-        responseType: "blob", // Ensure the response is treated as a Blob
+        responseType: "blob", // Ensure the response is treated as a Blob 
       });
   
       // Create a Blob from the response data
@@ -185,14 +202,15 @@ function DailyReport() {
                   <div className="max-h-[350px] overflow-y-auto">
                     <table className="table-auto w-full border-collapse border border-gray-500">
                       <tbody>
-                        {filteredEmployees.map(({ _id, name, employeeCode }) => (
-                          <tr key={_id}>
+                        {filteredEmployees.map(({ id, name, employeeCode }) => (
+                          <tr key={id}>
                             <td className="border border-gray-500 w-20 text-center items-center align-middle h-8" style={{ width: "max-width" }} >
                               <input
                                 type="checkbox"
-                                checked={selectedEmployees.includes(_id)}
-                                onChange={() => toggleEmployeeSelection(_id)}
+                                checked={selectedEmployees.includes(id)}
+                                onChange={() => toggleEmployeeSelection(id)}
                                 disabled={!fewSelect && !selectAll}
+                                
                               />
                             </td>
                             <td className="border border-gray-500 pl-4">{name}({employeeCode})</td>

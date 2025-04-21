@@ -78,6 +78,7 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Loader from '../../Component/Loader/index';
 
+
 const Layout =lazy(()=>import('../Layout/index'));
 const LoginPage = lazy(()=>import('../../Pages/FrontPage/index'));
 const Dashboard = lazy(()=>import('../../Pages/Dashboard/index'));
@@ -146,6 +147,10 @@ const Router = () => {
               <Route path='JoiningPdf' element={<JoiningPdf/>} />
               <Route path='degree' element={<Degree />} />
               <Route path='joiningform' element={<JoiningForm/>} />
+
+           
+
+              
 
               <Route path='*' element={<Errorpage/>} />
               
